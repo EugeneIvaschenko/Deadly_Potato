@@ -334,8 +334,9 @@ public class PlayerController : MonoBehaviour, IPunObservable, IOnEventCallback 
                     _rigid.velocity.Set(targetDirection.x, savedY, targetDirection.z);
                 }
                 //Изменение вектора скорости при активном движении
-                targetDirection = Vector3.ClampMagnitude(targetDirection, 1);
-                Vector3 deltaVelocity = targetDirection * Time.fixedDeltaTime * (isTurbo ? turboAccel : acceleration);
+                targetDirection = targetDirection.normalized;
+                float directionDifference = isTurbo ? 0 : (Vector3.Dot(targetDirection, _rigid.velocity.normalized) * -1 + 1) / 2;
+                Vector3 deltaVelocity = targetDirection * Time.fixedDeltaTime * (isTurbo ? turboAccel : acceleration + acceleration * directionDifference );
                 _rigid.velocity += deltaVelocity;
                 Vector3 tmp = _rigid.velocity; //Временный вектор, чтобы выполнить функцию ClampMagnitude() без учёта координаты Y, т.е. не влияем на падение
                 tmp.y = 0;
@@ -374,28 +375,38 @@ public class PlayerController : MonoBehaviour, IPunObservable, IOnEventCallback 
         
         foreach (RaycastHit hit in hits) {
             if (hit.collider != null) {
-                if (isTurbo && hit.collider.gameObject.CompareTag("Wall")) {
-                    _rigid.velocity = Vector3.Reflect(_rigid.velocity, hit.normal);
-                    return;
+                if (hit.collider.gameObject.CompareTag("Wall")) {
+                    if (TryBreakWall(hit.collider)) continue;
+                    if (isTurbo) _rigid.velocity = Vector3.Reflect(_rigid.velocity, hit.normal);
                 }
             }
         }
     }
 
     public void OnCustomCollisionEnter(Collider other) {
+        if(TryBreakWall(other)) return;
+        TryKillPlayer(other);
+    }
+
+    private bool TryBreakWall(Collider other) {
         Breakable wall = other.gameObject.GetComponent<Breakable>();
         if (wall != null) {
             bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, isAttack);
-            if (wallDestroyed) return;
+            return wallDestroyed;
         }
+        return false;
+    }
 
+    private bool TryKillPlayer(Collider other) {
         PlayerController player = other.gameObject.GetComponent<PlayerController>();
         if (player != null) {
-            if (player.Equals(this)) return;
+            if (player.Equals(this)) return false;
             if (isAttack && !player.IsShield && !player.IsDead) {
                 player.Kill();
+                return true;
             }
         }
+        return false;
     }
 
     private void KillPlayer(int actorNr, int time) {
