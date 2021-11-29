@@ -2,26 +2,23 @@
 using UnityEngine;
 
 public class Blade : MonoBehaviour {
+    private PlayerController playerController;
+
     public float growthTime = 0.2f;
     public float lifetime = 0.6f;
     public float maxSize = 2f;
     private float minSize = 1f;
     private float curSize;
-    public BladeRB _bladeRB;
 
     private BladeGrowth bladeGrowth = BladeGrowth.Idle;
 
     private void Start() {
-        //_bladeRB = GetComponentInParent<BladeRB>();
         gameObject.SetActive(false);
+        playerController = gameObject.GetComponentInParent<PlayerController>();
     }
 
-    private void FixedUpdate() {
-        if (gameObject.activeSelf) {
-            _bladeRB.transform.localRotation = transform.localRotation;
-            //_bladeRB.transform.localScale = transform.localScale;
-            _bladeRB.transform.position = transform.position;
-        }
+    private void OnTriggerEnter(Collider other) {
+        playerController.OnCustomCollisionEnter(other);
     }
 
     public void Attack() {

@@ -1,14 +1,12 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
-using ExitGames.Client.Photon;
-using UnityEngine.EventSystems;
+using System.Collections;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour, IPunObservable, IOnEventCallback {
     [SerializeField] private Blade blade = null;
-    [SerializeField] private BladeRB bladeRB = null;
     [SerializeField] private Shield shield = null;
     [SerializeField] private GameObject arrowTracker = null;
 
@@ -35,7 +33,7 @@ public class PlayerController : MonoBehaviour, IPunObservable, IOnEventCallback 
 
     private Rigidbody _rigid;
     private SphereCollider _collider;
-    private PhotonView photonView;
+    public PhotonView photonView;
     private Vector3 _networkPosition;
     private Quaternion _networkRotation;
 
@@ -372,35 +370,30 @@ public class PlayerController : MonoBehaviour, IPunObservable, IOnEventCallback 
     }
 
     private void TryCollision() {
-        RaycastHit[] hits;
-        if (isAttack) {
-            bladeRB.gameObject.SetActive(true);
-            bladeRB.transform.localScale = blade.transform.localScale * 1.01f;
-            float minDistance = 0.01f;
-            float distance = (_rigid.velocity.magnitude > minDistance) ? _rigid.velocity.magnitude : minDistance;
-            hits = bladeRB.RB.SweepTestAll(_rigid.velocity, distance * Time.fixedDeltaTime);
-            bladeRB.gameObject.SetActive(false);
-        } else {
-            hits = _rigid.SweepTestAll(_rigid.velocity, _rigid.velocity.magnitude * Time.fixedDeltaTime);
-        }
+        RaycastHit[] hits = _rigid.SweepTestAll(_rigid.velocity, _rigid.velocity.magnitude * Time.fixedDeltaTime);
+        
         foreach (RaycastHit hit in hits) {
             if (hit.collider != null) {
-                Breakable wall = hit.collider.gameObject.GetComponent<Breakable>();
-                if (wall != null) {
-                    bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, isAttack);
-                    if (wallDestroyed) return;
-                }
                 if (isTurbo && hit.collider.gameObject.CompareTag("Wall")) {
                     _rigid.velocity = Vector3.Reflect(_rigid.velocity, hit.normal);
                     return;
                 }
-                PlayerController player = hit.collider.gameObject.GetComponent<PlayerController>();
-                if (player != null) {
-                    if (player.Equals(this)) return;
-                    if(isAttack && !player.IsShield && !player.IsDead) {
-                        player.Kill();
-                    }
-                }
+            }
+        }
+    }
+
+    public void OnCustomCollisionEnter(Collider other) {
+        Breakable wall = other.gameObject.GetComponent<Breakable>();
+        if (wall != null) {
+            bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, isAttack);
+            if (wallDestroyed) return;
+        }
+
+        PlayerController player = other.gameObject.GetComponent<PlayerController>();
+        if (player != null) {
+            if (player.Equals(this)) return;
+            if (isAttack && !player.IsShield && !player.IsDead) {
+                player.Kill();
             }
         }
     }
