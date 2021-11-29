@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 8af5111d5f1639d498e5cd96949d9ec6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - speedIndicator: {instanceID: 0}
+  - attackIndicator: {instanceID: 0}
+  - shieldIndicator: {instanceID: 0}
+  - turboIndicator: {instanceID: 0}
+  - onlinePanel: {instanceID: 0}
+  - onlineList: {instanceID: 0}
+  - nicksLayer: {instanceID: 0}
+  - nickFollowerPrefab: {fileID: 6690613307070573981, guid: 3d0c4e541e6873d42998a50fda8961b8,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
