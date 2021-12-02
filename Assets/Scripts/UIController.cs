@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using System.Collections.Generic;
-using UnityEngine.EventSystems;
 
 public class UIController : MonoBehaviourPunCallbacks {
     [SerializeField] private Image speedIndicator;
@@ -16,23 +15,23 @@ public class UIController : MonoBehaviourPunCallbacks {
     [SerializeField] private GameObject nickFollowerPrefab;
     [SerializeField] private Joystick moveStick;
 
-    private PlayerController playerController = null;
+    private PlayerInput _playerInput = null;
 
-    public void AttackOnDown() { playerController.AttackOnDown(); }
+    public void AttackOnDown() { _playerInput.AttackOnDown(); }
 
-    public void AttackOnUp() { playerController.AttackOnUp(); }
+    public void AttackOnUp() { _playerInput.AttackOnUp(); }
 
-    public void TurboOnDown() { playerController.TurboOnDown(); }
+    public void TurboOnDown() { _playerInput.TurboOnDown(); }
 
-    public void TurboOnUp() { playerController.TurboOnUp(); }
+    public void TurboOnUp() { _playerInput.TurboOnUp(); }
 
-    public void ShieldOnDown() { playerController.ShieldOnDown(); }
+    public void ShieldOnDown() { _playerInput.ShieldOnDown(); }
 
-    public void ShieldOnUp() { playerController.ShieldOnUp(); }
+    public void ShieldOnUp() { _playerInput.ShieldOnUp(); }
 
-    public void BrakeOnDown() { playerController.BrakeOnDown(); }
+    public void BrakeOnDown() { _playerInput.BrakeOnDown(); }
 
-    public void BrakeOnUp() { playerController.BrakeOnUp(); }
+    public void BrakeOnUp() { _playerInput.BrakeOnUp(); }
 
     private List<NickFollower> _nickBars = new List<NickFollower>();
 
@@ -70,7 +69,7 @@ public class UIController : MonoBehaviourPunCallbacks {
         Messenger<string>.AddListener(GameEvent.ONLINE_LIST_UPDATE, OnOnlineListUpdate);
         Messenger<string, string, Transform>.AddListener(GameEvent.PLAYER_ENTERED_ROOM, OnPlayerEnteredRoom);
         Messenger<string>.AddListener(GameEvent.PLAYER_LEFT_ROOM, OnPlayerLeftRoom);
-        Messenger<PlayerController>.AddListener(GameEvent.GET_MOVESTICK, GetMovestick);
+        Messenger<PlayerInput>.AddListener(GameEvent.GET_MOVESTICK, GetMovestick);
     }
 
     private void OnDestroy() {
@@ -85,12 +84,12 @@ public class UIController : MonoBehaviourPunCallbacks {
         Messenger<string>.RemoveListener(GameEvent.ONLINE_LIST_UPDATE, OnOnlineListUpdate);
         Messenger<string, string, Transform>.RemoveListener(GameEvent.PLAYER_ENTERED_ROOM, OnPlayerEnteredRoom);
         Messenger<string>.RemoveListener(GameEvent.PLAYER_LEFT_ROOM, OnPlayerLeftRoom);
-        Messenger<PlayerController>.RemoveListener(GameEvent.GET_MOVESTICK, GetMovestick);
+        Messenger<PlayerInput>.RemoveListener(GameEvent.GET_MOVESTICK, GetMovestick);
     }
 
-    private void GetMovestick(PlayerController controller) {
-        playerController = controller;
-        controller.SetMoveStick(moveStick);
+    private void GetMovestick(PlayerInput input) {
+        _playerInput = input;
+        _playerInput.SetMoveStick(moveStick);
     }
 
     private void OnPlayerEnteredRoom(string nickname, string id, Transform target) {

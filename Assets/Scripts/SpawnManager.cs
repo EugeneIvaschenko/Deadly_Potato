@@ -24,7 +24,7 @@ public class SpawnManager : MonoBehaviour {
     private IEnumerator DelayedRespawn(PlayerController player, int time) {
         yield return new WaitForSeconds(time);
         while (true) {
-            if (player.photonView.IsMine) {
+            if (player._photonView.IsMine) {
                 if (spawnZones.Count > 0) {
                     int spawnNumber = Random.Range(0, spawnZones.Count - 1);
                     if (spawnZones[spawnNumber] == null || spawnZones[spawnNumber].gameObject == null) continue;
