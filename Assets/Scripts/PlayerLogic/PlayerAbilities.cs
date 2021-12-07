@@ -29,7 +29,7 @@ public class PlayerAbilities : MonoBehaviour
     public bool CanShield { get; set; } = true;
     public bool IsShield { get; set; } = false;
 
-    private void Start() {
+    private void Awake() {
         _rigid = GetComponent<Rigidbody>();
         _playerInput = GetComponent<PlayerInput>();
         _playerController = GetComponent<PlayerController>();
@@ -64,7 +64,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     public void Attack() {
-        _playerController.blade.Attack();
+        _playerController.blade.Run();
         CanAttack = false;
         IsAttack = true;
         StartCoroutine(AttackRefresh());
@@ -78,7 +78,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     private IEnumerator AttackRefresh() {
-        if (_playerController._photonView.IsMine) Messenger<float>.Broadcast(GameEvent.ATTACK_REFRESH, attackDelay);
+        if (_playerController.PhotonView.IsMine) Messenger<float>.Broadcast(GameEvent.ATTACK_REFRESH, attackDelay);
         yield return new WaitForSeconds(attackDelay);
         CanAttack = true;
     }
@@ -91,7 +91,7 @@ public class PlayerAbilities : MonoBehaviour
     public void EnableShield() {
         _playerController.shield.ActivateShield();
         IsShield = true;
-        if (_playerController._photonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
+        if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
         CanShield = false;
         DisableTurbo();
         if (IsTurboPreparing) {
@@ -104,11 +104,11 @@ public class PlayerAbilities : MonoBehaviour
 
     public void DisablaShield() {
         IsShield = false;
-        if (_playerController._photonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
+        if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
     }
 
     private IEnumerator ShieldRefresh() {
-        if (_playerController._photonView.IsMine) Messenger<float>.Broadcast(GameEvent.SHIELD_REFRESH, shieldDelay);
+        if (_playerController.PhotonView.IsMine) Messenger<float>.Broadcast(GameEvent.SHIELD_REFRESH, shieldDelay);
         yield return new WaitForSeconds(shieldDelay);
         CanShield = true;
     }
@@ -120,7 +120,7 @@ public class PlayerAbilities : MonoBehaviour
 
     public void EnableTurbo() {
         IsTurbo = true;
-        if (_playerController._photonView.IsMine) Messenger<bool>.Broadcast(GameEvent.TURBO_SWITCHED, IsTurbo);
+        if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.TURBO_SWITCHED, IsTurbo);
         CanTurbo = false;
         IsTurboPreparing = false;
         StartCoroutine(TurboRefresh());
@@ -129,11 +129,11 @@ public class PlayerAbilities : MonoBehaviour
 
     public void DisableTurbo() {
         IsTurbo = false;
-        if (_playerController._photonView.IsMine) Messenger<bool>.Broadcast(GameEvent.TURBO_SWITCHED, IsTurbo);
+        if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.TURBO_SWITCHED, IsTurbo);
     }
 
     private IEnumerator TurboRefresh() {
-        if (_playerController._photonView.IsMine) Messenger<float>.Broadcast(GameEvent.TURBO_REFRESH, turboDelay);
+        if (_playerController.PhotonView.IsMine) Messenger<float>.Broadcast(GameEvent.TURBO_REFRESH, turboDelay);
         yield return new WaitForSeconds(turboDelay);
         CanTurbo = true;
     }
@@ -141,34 +141,5 @@ public class PlayerAbilities : MonoBehaviour
     private IEnumerator TurboDelayDeactivating() {
         yield return new WaitForSeconds(turboDuration);
         DisableTurbo();
-    }
-
-    public void KillPlayer(int actorNr) {
-        if (_playerController._photonView.OwnerActorNr == actorNr) {
-            _playerController.KillThis(false);
-            Debug.LogFormat("Player {0} is dead", actorNr);
-            return;
-        }
-    }
-
-    public bool TryBreakWall(Collider other) {
-        Breakable wall = other.gameObject.GetComponent<Breakable>();
-        if (wall != null) {
-            bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, IsAttack);
-            return wallDestroyed;
-        }
-        return false;
-    }
-
-    public bool TryKillPlayer(Collider other) {
-        PlayerController player = other.gameObject.GetComponent<PlayerController>();
-        if (player != null) {
-            if (player.Equals(this)) return false;
-            if (IsAttack && !player._abilities.IsShield && !player.IsDead) {
-                player.KillThis();
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -11,11 +11,21 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
     private Rigidbody _rigid;
     private PlayerAbilities _abilities;
     private PlayerInput _playerInput;
+    private PlayerController _playerController;
 
-    private void Start() {
+    private void Awake() {
         _rigid = GetComponent<Rigidbody>();
         _abilities = GetComponent<PlayerAbilities>();
         _playerInput = GetComponent<PlayerInput>();
+        _playerController = GetComponent<PlayerController>();
+    }
+
+    private void OnEnable() {
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    private void OnDisable() {
+        PhotonNetwork.RemoveCallbackTarget(this);
     }
 
     public void SynchronizeSkills() {
@@ -30,22 +40,6 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
         }
         if (_abilities.IsShield && _abilities.CanShield) {
             _abilities.EnableShield();
-        }
-    }
-
-    public void OnEvent(EventData photonEvent) {
-        byte eventCode = photonEvent.Code;
-
-        switch (eventCode) {
-            case GameNetworkEvent.PLAYER_DIED:
-                int[] dieData = (int[])photonEvent.CustomData;
-                _abilities.KillPlayer(dieData[0]);
-                break;
-            case GameNetworkEvent.PLAYER_REBIRTH:
-                int actorNrRebirth = (int)photonEvent.CustomData;
-                Debug.LogFormat("Player {0} is Rebirth", actorNrRebirth);
-                Messenger<int>.Broadcast(GameEvent.PLAYER_REBIRTH, actorNrRebirth);
-                break;
         }
     }
 
@@ -74,14 +68,38 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
             float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
             _networkPosition += _rigid.velocity * lag;
 
-            //Телепорт игрока, если он далеко от своего реального местоположения. Нужно придумать компенсацию лагов получше. Refuck
+            //Телепорт игрока, если он далеко от своего реального местоположения. Нужно придумать компенсацию лагов получше. TODO
             if ((_rigid.position - _networkPosition).magnitude > (_abilities.IsTurbo ? 10f : 4f)) isNeedAbsoluteSerialize = true;
 
-            if (isNeedAbsoluteSerialize) {
-                _rigid.position = _networkPosition;
-                _rigid.rotation = _networkRotation;
-                isNeedAbsoluteSerialize = false;
-            }
+            TryAbsolutePositionSerialize();
+        }
+    }
+
+    public void OnEvent(EventData photonEvent) {
+        byte eventCode = photonEvent.Code;
+        int[] eventData = (int[])photonEvent.CustomData;
+
+        switch (eventCode) {
+            case GameNetworkEvent.PLAYER_DIED:
+                if (_playerController.PhotonView.OwnerActorNr == eventData[0]) {
+                    _playerController.Kill();
+                    Debug.LogFormat("Player {0} is Died", eventData[0]);
+                }
+                break;
+            case GameNetworkEvent.PLAYER_REBIRTH:
+                if (_playerController.PhotonView.OwnerActorNr == eventData[0]) {
+                    _playerController.Rebirth();
+                    Debug.LogFormat("Player {0} is Rebirthed", eventData[0]);
+                }
+                break;
+        }
+    }
+
+    private void TryAbsolutePositionSerialize() {
+        if (isNeedAbsoluteSerialize) {
+            _rigid.position = _networkPosition;
+            _rigid.rotation = _networkRotation;
+            isNeedAbsoluteSerialize = false;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class Blade : MonoBehaviour {
+public class BladeAnimation : MonoBehaviour {
     private PlayerPhysics _physics;
 
     public float growthTime = 0.2f;
@@ -12,21 +12,20 @@ public class Blade : MonoBehaviour {
 
     private BladeGrowth bladeGrowth = BladeGrowth.Idle;
 
-    private void Start() {
-        gameObject.SetActive(false);
+    private void Awake() {
         _physics = gameObject.GetComponentInParent<PlayerPhysics>();
     }
 
-    private void OnTriggerEnter(Collider other) {
-        _physics.OnCustomCollisionEnter(other);
+    private void Start() {
+        gameObject.SetActive(false);
     }
 
-    public void Attack() {
+    public void Run() {
         bladeGrowth = BladeGrowth.Growth;
         curSize = minSize;
         Refresh();
         gameObject.SetActive(true);
-        StartCoroutine(BladeAnimation());
+        StartCoroutine(GrowthUngrowth());
     }
 
     public void Refresh() {
@@ -34,7 +33,7 @@ public class Blade : MonoBehaviour {
         StopAllCoroutines();
     }
 
-    private IEnumerator BladeAnimation() {
+    private IEnumerator GrowthUngrowth() {
         while(bladeGrowth == BladeGrowth.Growth) {
             float deltaSize = maxSize - minSize;
             curSize += deltaSize * Time.deltaTime / growthTime;

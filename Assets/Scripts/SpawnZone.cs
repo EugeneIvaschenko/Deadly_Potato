@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 public class SpawnZone : MonoBehaviour {
-    private void Start() {
-        SpawnManager.AddToSpawnList(this);
+    private void Awake() {
+        SpawnZones.AddToSpawnList(this);
     }
 }

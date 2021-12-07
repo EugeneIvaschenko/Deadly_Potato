@@ -1,5 +1,4 @@
-﻿using ExitGames.Client.Photon;
-using Photon.Pun;
+﻿using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +8,7 @@ public class SessionManager : MonoBehaviourPunCallbacks {
     public GameObject PlayerPrefab;
     public CameraFollowing cameraFollower;
 
-    void Start() {
+    private void Start() {
         Vector3 pos = new Vector3(Random.Range(-5f, 5f), 3f, Random.Range(-1f, 1f));
         GameObject player = PhotonNetwork.Instantiate(PlayerPrefab.name, pos, Quaternion.identity);
         cameraFollower.target = player.transform;

@@ -8,17 +8,19 @@ public class PlayerPhysics : MonoBehaviour {
     private PlayerAbilities _abilities;
     private PlayerInput _playerInput;
     private PlayerNetworkSync _playerSync;
+    private PlayerController _playerController;
 
     private float curMaxSpeed = 0f;
     private float targetMaxSpeed = 0f;
 
-    private void Start() {
+    private void Awake() {
         _rigid = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
         _photonView = GetComponent<PhotonView>();
         _abilities = GetComponent<PlayerAbilities>();
         _playerInput = GetComponent<PlayerInput>();
         _playerSync = GetComponent<PlayerNetworkSync>();
+        _playerController = GetComponent<PlayerController>();
     }
 
     public void BallRigidMoving() {
@@ -82,15 +84,15 @@ public class PlayerPhysics : MonoBehaviour {
         foreach (RaycastHit hit in hits) {
             if (hit.collider != null) {
                 if (hit.collider.gameObject.CompareTag("Wall")) {
-                    if (_abilities.TryBreakWall(hit.collider)) continue;
+                    if (_playerController.TryBreakWall(hit.collider)) continue;
                     if (_abilities.IsTurbo) _rigid.velocity = Vector3.Reflect(_rigid.velocity, hit.normal);
                 }
             }
         }
     }
 
-    public void OnCustomCollisionEnter(Collider other) {
-        if (_abilities.TryBreakWall(other)) return;
-        _abilities.TryKillPlayer(other);
+    private void OnTriggerEnter(Collider other) {
+        if (_playerController.TryBreakWall(other)) return;
+        _playerController.TryKillPlayer(other);
     }
 }

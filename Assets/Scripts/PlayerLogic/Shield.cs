@@ -11,7 +11,7 @@ public class Shield : MonoBehaviour {
 
     private ShieldGrowth shieldGrowth = ShieldGrowth.Idle;
 
-    private void Start() {
+    private void Awake() {
         gameObject.SetActive(false);
     }
 

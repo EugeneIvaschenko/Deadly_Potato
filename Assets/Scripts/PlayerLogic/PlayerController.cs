@@ -1,6 +1,7 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -10,7 +11,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerPhysics))]
 [RequireComponent(typeof(PlayerNetworkSync))]
 public class PlayerController : MonoBehaviour {
-    [SerializeField] public Blade blade = null;
+    [SerializeField] public BladeAnimation blade = null;
     [SerializeField] public Shield shield = null;
     [SerializeField] private GameObject arrowTracker = null;
 
@@ -20,24 +21,27 @@ public class PlayerController : MonoBehaviour {
     public PlayerAbilities _abilities { get; private set; }
     public PlayerInput _playerInput { get; private set; }
     public PlayerPhysics _physics { get; private set; }
-    public PhotonView _photonView { get; private set; }
+    public PhotonView PhotonView { get; private set; }
+    public int RebirthDelay { get; private set; } = 2;
 
     public bool IsDead { get; private set; } = false;
 
-    private void Start() {
+    private void Awake() {
         _rigid = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
-        _photonView = GetComponent<PhotonView>();
+        PhotonView = GetComponent<PhotonView>();
         _abilities = GetComponent<PlayerAbilities>();
         _playerInput = GetComponent<PlayerInput>();
         _physics = GetComponent<PlayerPhysics>();
         _playerSync = GetComponent<PlayerNetworkSync>();
+    }
 
+    private void Start() {
         shield.lifetime = _abilities.shieldDuration;
-        if (_photonView.IsMine) {
+        if (PhotonView.IsMine) {
             Instantiate(arrowTracker).GetComponent<DirTracker>().playerBall = this;
         } else {
-            Messenger<string, string, Transform>.Broadcast(GameEvent.PLAYER_ENTERED_ROOM, _photonView.Owner.NickName, _photonView.Owner.UserId, transform);
+            Messenger<string, string, Transform>.Broadcast(GameEvent.PLAYER_ENTERED_ROOM, PhotonView.Owner.NickName, PhotonView.Owner.UserId, transform);
         }
     }
 
@@ -45,16 +49,16 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetKeyDown("escape")) Application.Quit();
 
         if (!IsDead && transform.position.y < -5) {
-            if (!_photonView.IsMine) {
+            if (!PhotonView.IsMine) {
                 _playerSync.isNeedAbsoluteSerialize = true;
                 return;
             }
-            KillThis();
+            Kill();
         }
 
         blade.transform.localRotation = Quaternion.Inverse(transform.rotation);
 
-        if (!_photonView.IsMine) {
+        if (!PhotonView.IsMine) {
             _playerSync.SynchronizeSkills();
             return;
         }
@@ -73,38 +77,7 @@ public class PlayerController : MonoBehaviour {
         _physics.BallRigidMoving();
     }
 
-    private void OnDestroy() {
-        Messenger<string>.Broadcast(GameEvent.PLAYER_LEFT_ROOM, _photonView.Owner.UserId);
-    }
-
-    private void OnEnable() {
-        PhotonNetwork.AddCallbackTarget(this);
-        Messenger<int>.AddListener(GameEvent.PLAYER_REBIRTH, NetworkRebirth);
-    }
-
-    private void OnDisable() {
-        PhotonNetwork.RemoveCallbackTarget(this);
-    }
-
-    public void NetworkRebirth(int actorNr) {
-        if (actorNr == _photonView.OwnerActorNr) {
-            Rebirth(false);
-            _playerSync.isNeedAbsoluteSerialize = true;
-        }
-    }
-
-    public void Rebirth(bool sendEvent = true) {
-        IsDead = false;
-        gameObject.SetActive(true);
-
-        if (sendEvent) {
-            int content = _photonView.ControllerActorNr;
-            RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
-            PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_REBIRTH, content, raiseEventOptions, SendOptions.SendReliable);
-        }
-    }
-
-    public void KillThis(bool sendEvent = true, int lagTime = 0) {
+    public void Kill() {
         if (IsDead) return;
         _abilities.DisableTurbo();
         _abilities.DisablaShield();
@@ -114,13 +87,54 @@ public class PlayerController : MonoBehaviour {
         _rigid.velocity = Vector3.zero;
         IsDead = true;
         gameObject.SetActive(false);
-        int rebirthTime = 2 - lagTime;
-        Messenger<PlayerController, int>.Broadcast(GameEvent.PLAYER_DIED, this, rebirthTime);
+        //if (PhotonView.IsMine) StartCoroutine(DelayedRespawn());
+        if (PhotonView.IsMine) DelayedRespawn();
+    }
 
-        if (sendEvent) {
-            int[] content = new int[] { _photonView.OwnerActorNr};
-            RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-            PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_DIED, content, raiseEventOptions, SendOptions.SendReliable);
+    public void Rebirth() {
+        if (!IsDead) return;
+        IsDead = false;
+        gameObject.SetActive(true);
+        transform.position = SpawnZones.GetRandomSpawnPoint();
+    }
+
+    public void NetworkKill(int ownerActorNr, int respawnDelay) {
+        int[] content = new int[] { ownerActorNr };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_DIED, content, raiseEventOptions, SendOptions.SendReliable);
+    }
+
+    public void NetworkRebirth(int ownerActorNr) {
+        int content = ownerActorNr;
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_REBIRTH, content, raiseEventOptions, SendOptions.SendReliable);
+    }
+
+    public bool TryBreakWall(Collider other) {
+        Breakable wall = other.gameObject.GetComponent<Breakable>();
+        if (wall != null) {
+            bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, _abilities.IsAttack);
+            return wallDestroyed;
         }
+        return false;
+    }
+
+    public bool TryKillPlayer(Collider other) {
+        PlayerController player = other.gameObject.GetComponent<PlayerController>();
+        if (player == null) return false;
+        if (player.Equals(this)) return false;
+        if (_abilities.IsAttack && !player._abilities.IsShield && !player.IsDead) {
+            player.Kill();
+            NetworkKill(player.PhotonView.OwnerActorNr, RebirthDelay);
+            return true;
+        }
+        return false;
+    }
+
+    private async void DelayedRespawn() {
+        //yield return new WaitForSeconds(RebirthDelay);
+        await Task.Delay(RebirthDelay * 1000);
+        Rebirth();
+        NetworkRebirth(PhotonView.OwnerActorNr);
     }
 }
