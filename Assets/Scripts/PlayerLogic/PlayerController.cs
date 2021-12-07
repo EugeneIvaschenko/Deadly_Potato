@@ -87,8 +87,8 @@ public class PlayerController : MonoBehaviour {
         _rigid.velocity = Vector3.zero;
         IsDead = true;
         gameObject.SetActive(false);
-        //if (PhotonView.IsMine) StartCoroutine(DelayedRespawn());
-        if (PhotonView.IsMine) DelayedRespawn();
+        DelayedRespawn();
+        if (!PhotonView.IsMine) transform.position = new Vector3(1500, 300, 0);
     }
 
     public void Rebirth() {
@@ -98,15 +98,15 @@ public class PlayerController : MonoBehaviour {
         transform.position = SpawnZones.GetRandomSpawnPoint();
     }
 
-    public void NetworkKill(int ownerActorNr, int respawnDelay) {
+    public void NetworkKill(int ownerActorNr) {
         int[] content = new int[] { ownerActorNr };
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
         PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_DIED, content, raiseEventOptions, SendOptions.SendReliable);
     }
 
     public void NetworkRebirth(int ownerActorNr) {
-        int content = ownerActorNr;
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.Others };
+        int[] content = new int[] { ownerActorNr };
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
         PhotonNetwork.RaiseEvent(GameNetworkEvent.PLAYER_REBIRTH, content, raiseEventOptions, SendOptions.SendReliable);
     }
 
@@ -122,10 +122,11 @@ public class PlayerController : MonoBehaviour {
     public bool TryKillPlayer(Collider other) {
         PlayerController player = other.gameObject.GetComponent<PlayerController>();
         if (player == null) return false;
+        if (player.PhotonView.IsMine) return false;
         if (player.Equals(this)) return false;
         if (_abilities.IsAttack && !player._abilities.IsShield && !player.IsDead) {
             player.Kill();
-            NetworkKill(player.PhotonView.OwnerActorNr, RebirthDelay);
+            NetworkKill(player.PhotonView.OwnerActorNr);
             return true;
         }
         return false;
@@ -136,5 +137,6 @@ public class PlayerController : MonoBehaviour {
         await Task.Delay(RebirthDelay * 1000);
         Rebirth();
         NetworkRebirth(PhotonView.OwnerActorNr);
+        Debug.Log("DelayedRespawn() - " + PhotonView.OwnerActorNr);
     }
 }

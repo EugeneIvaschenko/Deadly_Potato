@@ -77,19 +77,21 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
 
     public void OnEvent(EventData photonEvent) {
         byte eventCode = photonEvent.Code;
-        int[] eventData = (int[])photonEvent.CustomData;
-
         switch (eventCode) {
             case GameNetworkEvent.PLAYER_DIED:
-                if (_playerController.PhotonView.OwnerActorNr == eventData[0]) {
+                int[] eventDataDie = (int[])photonEvent.CustomData;
+                Debug.LogFormat("Die event. Data - {0}, receiver - {1}", eventDataDie[0], _playerController.PhotonView.OwnerActorNr);
+                if (_playerController.PhotonView.OwnerActorNr == eventDataDie[0]) {
                     _playerController.Kill();
-                    Debug.LogFormat("Player {0} is Died", eventData[0]);
+                    Debug.LogFormat("Player {0} is Died", eventDataDie[0]);
                 }
                 break;
             case GameNetworkEvent.PLAYER_REBIRTH:
-                if (_playerController.PhotonView.OwnerActorNr == eventData[0]) {
+                int[] eventDataBirth = (int[])photonEvent.CustomData;
+                Debug.LogFormat("Rebirth event. Data - {0}, receiver - {1}", eventDataBirth[0], _playerController.PhotonView.OwnerActorNr);
+                if (_playerController.PhotonView.OwnerActorNr == eventDataBirth[0]) {
                     _playerController.Rebirth();
-                    Debug.LogFormat("Player {0} is Rebirthed", eventData[0]);
+                    Debug.LogFormat("Player {0} is Rebirthed", eventDataBirth[0]);
                 }
                 break;
         }

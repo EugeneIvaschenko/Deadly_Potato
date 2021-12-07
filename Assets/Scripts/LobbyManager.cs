@@ -30,6 +30,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks {
     public override void OnConnectedToMaster() {
         Log("Connected to Master");
         _joinRoomButton.interactable = true;
+        SpawnZones.ClearZones();
     }
 
     public void CreateRoom() {
