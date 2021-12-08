@@ -2,10 +2,12 @@
 using UnityEngine;
 
 public class BladeAnimation : MonoBehaviour {
+    [SerializeField] private Transform bladeObject;
     private PlayerPhysics _physics;
 
+    public float rotatesPerSecond = 5;
     public float growthTime = 0.2f;
-    public float lifetime = 0.6f;
+    public float duration = 0.6f;
     public float maxSize = 2f;
     private float minSize = 1f;
     private float curSize;
@@ -26,6 +28,7 @@ public class BladeAnimation : MonoBehaviour {
         Refresh();
         gameObject.SetActive(true);
         StartCoroutine(GrowthUngrowth());
+        StartCoroutine(Rotation());
     }
 
     public void Refresh() {
@@ -34,7 +37,7 @@ public class BladeAnimation : MonoBehaviour {
     }
 
     private IEnumerator GrowthUngrowth() {
-        while(bladeGrowth == BladeGrowth.Growth) {
+        while (bladeGrowth == BladeGrowth.Growth) {
             float deltaSize = maxSize - minSize;
             curSize += deltaSize * Time.deltaTime / growthTime;
             transform.localScale = new Vector3(curSize, transform.lossyScale.y, curSize);
@@ -45,7 +48,7 @@ public class BladeAnimation : MonoBehaviour {
             yield return null;
         }
 
-        yield return new WaitForSeconds(lifetime - growthTime * 2);
+        yield return new WaitForSeconds(duration - growthTime * 2);
         bladeGrowth = BladeGrowth.Ungrowth;
 
         while (bladeGrowth == BladeGrowth.Ungrowth) {
@@ -59,6 +62,16 @@ public class BladeAnimation : MonoBehaviour {
             yield return null;
         }
         gameObject.SetActive(false);
+    }
+
+    private IEnumerator Rotation() {
+        float timeLeft = duration;
+        Vector3 rotation = new Vector3(0, rotatesPerSecond * 360, 0);
+        while (timeLeft > 0) {
+            bladeObject.Rotate(rotation * Time.deltaTime);
+            timeLeft -= Time.deltaTime;
+            yield return null;
+        }
     }
 }
 

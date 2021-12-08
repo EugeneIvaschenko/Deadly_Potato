@@ -6,7 +6,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerAbilities))]
-[RequireComponent(typeof(SphereCollider))]
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(PlayerPhysics))]
 [RequireComponent(typeof(PlayerNetworkSync))]
@@ -16,7 +15,6 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private GameObject arrowTracker = null;
 
     private Rigidbody _rigid;
-    private SphereCollider _collider;
     private PlayerNetworkSync _playerSync;
     public PlayerAbilities _abilities { get; private set; }
     public PlayerInput _playerInput { get; private set; }
@@ -28,7 +26,6 @@ public class PlayerController : MonoBehaviour {
 
     private void Awake() {
         _rigid = GetComponent<Rigidbody>();
-        _collider = GetComponent<SphereCollider>();
         PhotonView = GetComponent<PhotonView>();
         _abilities = GetComponent<PlayerAbilities>();
         _playerInput = GetComponent<PlayerInput>();

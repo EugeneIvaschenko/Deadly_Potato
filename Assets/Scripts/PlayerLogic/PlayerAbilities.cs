@@ -84,7 +84,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     private IEnumerator StopAttacking() {
-        yield return new WaitForSeconds(_playerController.blade.lifetime);
+        yield return new WaitForSeconds(_playerController.blade.duration);
         IsAttack = false;
     }
 
