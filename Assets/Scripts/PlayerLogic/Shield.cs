@@ -15,11 +15,17 @@ public class Shield : MonoBehaviour {
         gameObject.SetActive(false);
     }
 
-    public void ActivateShield() {
+    public void Activate() {
         shieldGrowth = ShieldGrowth.Growth;
         curSize = minSize;
         gameObject.SetActive(true);
         StartCoroutine(ShieldAnimation());
+    }
+
+    public void Deactivate() {
+        curSize = minSize;
+        gameObject.SetActive(false);
+        StopAllCoroutines();
     }
 
     private IEnumerator ShieldAnimation() {

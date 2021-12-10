@@ -89,7 +89,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     public void EnableShield() {
-        _playerController.shield.ActivateShield();
+        _playerController.shield.Activate();
         IsShield = true;
         if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
         CanShield = false;
@@ -103,6 +103,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     public void DisablaShield() {
+        _playerController.shield.Deactivate();
         IsShield = false;
         if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
     }

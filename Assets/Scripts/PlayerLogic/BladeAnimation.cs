@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public class BladeAnimation : MonoBehaviour {
-    [SerializeField] private Transform bladeObject;
+    [SerializeField] private Transform bladeContainer;
     private PlayerPhysics _physics;
 
     public float rotatesPerSecond = 5;
@@ -40,7 +40,7 @@ public class BladeAnimation : MonoBehaviour {
         while (bladeGrowth == BladeGrowth.Growth) {
             float deltaSize = maxSize - minSize;
             curSize += deltaSize * Time.deltaTime / growthTime;
-            transform.localScale = new Vector3(curSize, transform.lossyScale.y, curSize);
+            transform.localScale = new Vector3(curSize, 1, curSize);
             if (curSize >= maxSize) {
                 curSize = maxSize;
                 bladeGrowth = BladeGrowth.Idle;
@@ -68,7 +68,7 @@ public class BladeAnimation : MonoBehaviour {
         float timeLeft = duration;
         Vector3 rotation = new Vector3(0, rotatesPerSecond * 360, 0);
         while (timeLeft > 0) {
-            bladeObject.Rotate(rotation * Time.deltaTime);
+            bladeContainer.Rotate(rotation * Time.deltaTime);
             timeLeft -= Time.deltaTime;
             yield return null;
         }
