@@ -14,6 +14,7 @@ public class UIController : MonoBehaviourPunCallbacks {
     [SerializeField] private GameObject nicksLayer;
     [SerializeField] private GameObject nickFollowerPrefab;
     [SerializeField] private Joystick moveStick;
+    [SerializeField] private GameObject mobileButtons;
 
     private PlayerInput _playerInput = null;
 
@@ -55,6 +56,11 @@ public class UIController : MonoBehaviourPunCallbacks {
         _activeShieldColor = _defaultShieldColor * 1.5f;
 
         onlinePanel.gameObject.SetActive(false);
+
+#if UNITY_STANDALONE
+        moveStick.gameObject.SetActive(false);
+        mobileButtons.SetActive(false);
+#endif
     }
 
     private void Awake() {
@@ -69,7 +75,7 @@ public class UIController : MonoBehaviourPunCallbacks {
         Messenger<string>.AddListener(GameEvent.ONLINE_LIST_UPDATE, OnOnlineListUpdate);
         Messenger<string, string, Transform>.AddListener(GameEvent.PLAYER_ENTERED_ROOM, OnPlayerEnteredRoom);
         Messenger<string>.AddListener(GameEvent.PLAYER_LEFT_ROOM, OnPlayerLeftRoom);
-        Messenger<PlayerInput>.AddListener(GameEvent.GET_MOVESTICK, GetMovestick);
+        Messenger<PlayerInput>.AddListener(GameEvent.GET_MOVESTICK, SetMobileControllers);
     }
 
     private void OnDestroy() {
@@ -84,10 +90,10 @@ public class UIController : MonoBehaviourPunCallbacks {
         Messenger<string>.RemoveListener(GameEvent.ONLINE_LIST_UPDATE, OnOnlineListUpdate);
         Messenger<string, string, Transform>.RemoveListener(GameEvent.PLAYER_ENTERED_ROOM, OnPlayerEnteredRoom);
         Messenger<string>.RemoveListener(GameEvent.PLAYER_LEFT_ROOM, OnPlayerLeftRoom);
-        Messenger<PlayerInput>.RemoveListener(GameEvent.GET_MOVESTICK, GetMovestick);
+        Messenger<PlayerInput>.RemoveListener(GameEvent.GET_MOVESTICK, SetMobileControllers);
     }
 
-    private void GetMovestick(PlayerInput input) {
+    private void SetMobileControllers(PlayerInput input) {
         _playerInput = input;
         _playerInput.SetMoveStick(moveStick);
     }

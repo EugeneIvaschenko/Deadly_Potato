@@ -56,8 +56,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks {
         targetLevel = levelName;
         Debug.Log(levelName);
         PhotonNetwork.JoinOrCreateRoom(targetLevel, new RoomOptions { MaxPlayers = 5 }, TypedLobby.Default, null);
-        //if (PhotonNetwork.CountOfRooms > 0) PhotonNetwork.JoinRandomRoom();
-        //else CreateRoom();
     }
 
     public override void OnJoinedRoom() {

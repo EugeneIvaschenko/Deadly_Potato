@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour {
 
         Vector3 xzVector3 = _rigid.velocity;
         xzVector3.y = 0;
-        Messenger<float>.Broadcast(GameEvent.SPEED_CHANGED, xzVector3.magnitude / _abilities.turboSpeed);
+        Messenger<float>.Broadcast(GameEvent.SPEED_CHANGED, xzVector3.magnitude / _physics.turboSpeed);
     }
 
     private void FixedUpdate() {

@@ -27,7 +27,7 @@ public class PlayerInput : MonoBehaviour {
 
 #elif UNITY_ANDROID || UNITY_IOS
         if (moveStick == null) {
-            Messenger<PlayerController>.Broadcast(GameEvent.GET_MOVESTICK, this);
+            Messenger<PlayerInput>.Broadcast(GameEvent.GET_MOVESTICK, this);
         }
         else {
             horInput = moveStick.Horizontal;

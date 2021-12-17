@@ -13,14 +13,6 @@ public class PlayerAbilities : MonoBehaviour
     public float shieldDuration = 3.0f;
     public float shieldDelay = 6.0f;
 
-    public float normalSpeed = 10.0f;
-    public float turboSpeed = 20.0f;
-    public float shieldSpeed = 7.0f;
-    public float acceleration = 10.0f;
-    public float turboAccel = 20.0f;
-    public float deceleration = 5.0f;
-    public float brakingDecel = 20.0f;
-
     public bool IsAttack { get; set; } = false;
     public bool CanAttack { get; set; } = true;
     public bool CanTurbo { get; set; } = true;

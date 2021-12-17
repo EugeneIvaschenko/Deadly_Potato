@@ -13,6 +13,14 @@ public class PlayerPhysics : MonoBehaviour {
     private float curMaxSpeed = 0f;
     private float targetMaxSpeed = 0f;
 
+    public float normalSpeed = 10.0f;
+    public float turboSpeed = 20.0f;
+    public float shieldSpeed = 7.0f;
+    public float acceleration = 10.0f;
+    public float turboAccel = 20.0f;
+    public float deceleration = 5.0f;
+    public float brakingDecel = 20.0f;
+
     private void Awake() {
         _rigid = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
@@ -27,7 +35,7 @@ public class PlayerPhysics : MonoBehaviour {
         if (_photonView.IsMine) {
             TryCollision();
 
-            targetMaxSpeed = _abilities.IsShield ? _abilities.shieldSpeed : _abilities.IsTurbo ? _abilities.turboSpeed : _abilities.normalSpeed;
+            targetMaxSpeed = _abilities.IsShield ? shieldSpeed : _abilities.IsTurbo ? turboSpeed : normalSpeed;
             if (targetMaxSpeed < curMaxSpeed) curMaxSpeed += (targetMaxSpeed - curMaxSpeed) * Time.fixedDeltaTime * 0.8f;
             else curMaxSpeed = targetMaxSpeed;
 
@@ -44,7 +52,7 @@ public class PlayerPhysics : MonoBehaviour {
                 //Изменение вектора скорости при активном движении
                 targetDirection = targetDirection.normalized;
                 float directionDifference = _abilities.IsTurbo ? 0 : (Vector3.Dot(targetDirection, _rigid.velocity.normalized) * -1 + 1) * 0.5f;
-                Vector3 deltaVelocity = targetDirection * Time.fixedDeltaTime * (_abilities.IsTurbo ? _abilities.turboAccel : _abilities.acceleration + _abilities.acceleration * directionDifference);
+                Vector3 deltaVelocity = targetDirection * Time.fixedDeltaTime * (_abilities.IsTurbo ? turboAccel : acceleration + acceleration * directionDifference);
                 _rigid.velocity += deltaVelocity;
                 Vector3 tmp = _rigid.velocity; //Временный вектор, чтобы выполнить функцию ClampMagnitude() без учёта координаты Y, т.е. не влияем на падение
                 tmp.y = 0;
@@ -56,7 +64,7 @@ public class PlayerPhysics : MonoBehaviour {
                 Vector3 tmp = _rigid.velocity; //Временный вектор, чтобы не изменить скорость падения в следующих преобразованиях. Координата Y 
                 tmp.y = 0;
                 Vector3 drag = tmp.normalized;
-                Vector3 deltaVelocity = drag * Time.fixedDeltaTime * (_playerInput.brakingInput ? _abilities.brakingDecel : _abilities.deceleration);
+                Vector3 deltaVelocity = drag * Time.fixedDeltaTime * (_playerInput.brakingInput ? brakingDecel : deceleration);
                 if (Vector3.Dot(tmp, tmp - deltaVelocity) > 0)
                     _rigid.velocity -= deltaVelocity;
                 else {
