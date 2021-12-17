@@ -226,13 +226,6 @@ MonoBehaviour:
   turboDelay: 6
   shieldDuration: 3
   shieldDelay: 6
-  normalSpeed: 12
-  turboSpeed: 26
-  shieldSpeed: 8
-  acceleration: 15
-  turboAccel: 40
-  deceleration: 5
-  brakingDecel: 50
 --- !u!114 &3295035323431032162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -257,6 +250,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30cf36ac4ab04dd44b1fac31ce7be63d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  normalSpeed: 12
+  turboSpeed: 26
+  shieldSpeed: 8
+  acceleration: 15
+  deceleration: 5
+  rotantionSpeed: 2
+  turboAccel: 40
+  brakingDecel: 50
+  speedUpEffect: 5
+  speedDownEffect: 5
+  accelerationUpEffect: 10
+  accelerationDownEffect: 5
+  rotationSpeedUpEffect: 3
+  rotationSpeedDownEffect: 2
 --- !u!114 &1613007646034015304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,7 +320,7 @@ MeshCollider:
   serializedVersion: 4
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &4864581560631407543
 GameObject:
   m_ObjectHideFlags: 0
