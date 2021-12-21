@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CircleLevel.unity
     guid: 092bffd8b910db14992fc346c49a04a1
+  - enabled: 1
+    path: Assets/Scenes/NewLevel.unity
+    guid: d0259ec78caae9a42b105ba5fd67f1c1
   m_configObjects: {}

@@ -16,7 +16,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks {
     }
 
     private void Start() {
-        PhotonNetwork.NickName = "Player " + Random.Range(1000, 9999);
+        if(PlayerSettings.playerNickName == "") PlayerSettings.playerNickName = "Player " + Random.Range(1000, 9999);
+        PhotonNetwork.NickName = PlayerSettings.playerNickName;
         Log("Player's name is set to " + PhotonNetwork.NickName);
         _nicknameInput.text = PhotonNetwork.NickName;
 
@@ -30,7 +31,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks {
     }
 
     public void OnEditNickname() {
-        if(_nicknameInput.text != "") PhotonNetwork.NickName = _nicknameInput.text;
+        if (_nicknameInput.text != "") {
+            PlayerSettings.playerNickName = _nicknameInput.text;
+            PhotonNetwork.NickName = _nicknameInput.text;
+        }
     }
 
     public override void OnConnectedToMaster() {

@@ -186,6 +186,7 @@ MonoBehaviour:
   shield: {fileID: 4864581560631407500}
   arrowTracker: {fileID: 1180247670787160475, guid: dd71b18e89b6de945b90fdc0e097ae78,
     type: 3}
+  skins: {fileID: 11400000, guid: d9d652936960428498f1b8d2c19c9c72, type: 2}
 --- !u!114 &6159437840048957742
 MonoBehaviour:
   m_ObjectHideFlags: 0

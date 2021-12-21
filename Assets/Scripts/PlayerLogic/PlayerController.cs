@@ -1,6 +1,7 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] public BladeAnimation blade = null;
     [SerializeField] public Shield shield = null;
     [SerializeField] private GameObject arrowTracker = null;
+    [SerializeField] private SkinListSO skins;
 
     private Rigidbody _rigid;
     private PlayerNetworkSync _playerSync;
@@ -23,6 +25,7 @@ public class PlayerController : MonoBehaviour {
     public int RebirthDelay { get; private set; } = 2;
 
     public bool IsDead { get; private set; } = false;
+    public string _skinID { get; private set;}
 
     private void Awake() {
         _rigid = GetComponent<Rigidbody>();
@@ -37,6 +40,7 @@ public class PlayerController : MonoBehaviour {
         shield.lifetime = _abilities.shieldDuration;
         if (PhotonView.IsMine) {
             Instantiate(arrowTracker).GetComponent<DirTracker>().playerBall = this;
+            SetSkin(PlayerSettings.selectedSkinID);
         } else {
             Messenger<string, string, Transform>.Broadcast(GameEvent.PLAYER_ENTERED_ROOM, PhotonView.Owner.NickName, PhotonView.Owner.UserId, transform);
         }
@@ -72,6 +76,12 @@ public class PlayerController : MonoBehaviour {
 
     private void FixedUpdate() {
         _physics.BallRigidMoving();
+    }
+
+    public void SetSkin(string skinID) {
+        _skinID = skinID;
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+        meshRenderer.material = (from skin in skins.skinList where skin.uniqID == skinID select skin.materials).First();
     }
 
     public void Kill() {

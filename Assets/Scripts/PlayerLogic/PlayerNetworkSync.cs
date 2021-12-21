@@ -54,6 +54,7 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
             stream.SendNext(_abilities.IsTurboPreparing);
             stream.SendNext(_abilities.IsShield);
             stream.SendNext(_playerInput.brakingInput);
+            stream.SendNext(_playerController._skinID);
         }
         else {
             _networkPosition = (Vector3)stream.ReceiveNext();
@@ -64,6 +65,10 @@ public class PlayerNetworkSync : MonoBehaviour, IPunObservable, IOnEventCallback
             _abilities.IsTurboPreparing = (bool)stream.ReceiveNext();
             _abilities.IsShield = (bool)stream.ReceiveNext();
             _playerInput.brakingInput = (bool)stream.ReceiveNext();
+            string skinID = (string)stream.ReceiveNext();
+            if(skinID != _playerController._skinID) {
+                _playerController.SetSkin(skinID);
+            }
 
             float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
             _networkPosition += _rigid.velocity * lag;
