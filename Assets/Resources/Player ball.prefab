@@ -186,7 +186,7 @@ MonoBehaviour:
   shield: {fileID: 4864581560631407500}
   arrowTracker: {fileID: 1180247670787160475, guid: dd71b18e89b6de945b90fdc0e097ae78,
     type: 3}
-  skins: {fileID: 11400000, guid: d9d652936960428498f1b8d2c19c9c72, type: 2}
+  skins: {fileID: 11400000, guid: c187ef96b9f78b24abff3bde632c5f6b, type: 2}
 --- !u!114 &6159437840048957742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,12 +202,12 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   Group: 0
   prefixField: -1
-  observableSearch: 0
-  Synchronization: 3
+  Synchronization: 1
   OwnershipTransfer: 0
+  observableSearch: 0
   ObservedComponents:
   - {fileID: 1613007646034015304}
-  viewIdField: 0
+  sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
 --- !u!114 &-63210642381463114
@@ -321,7 +321,7 @@ MeshCollider:
   serializedVersion: 4
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &4864581560631407543
 GameObject:
   m_ObjectHideFlags: 0

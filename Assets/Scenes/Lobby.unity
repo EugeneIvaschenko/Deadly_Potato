@@ -2471,7 +2471,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb45782751d81343a5493e17cea0351, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skins: {fileID: 11400000, guid: d9d652936960428498f1b8d2c19c9c72, type: 2}
+  skins: {fileID: 11400000, guid: c187ef96b9f78b24abff3bde632c5f6b, type: 2}
   SkinCheckUIPrefab: {fileID: 451748655572521252, guid: e667f845e95eece429cbcbedd794ec2c,
     type: 3}
   SkinListObject: {fileID: 1059078719}
