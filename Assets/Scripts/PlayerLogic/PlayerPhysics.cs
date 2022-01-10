@@ -47,9 +47,9 @@ public class PlayerPhysics : MonoBehaviour {
     }
 
     public void BallRigidMoving() {
+        CalcCurrentSpeeds();
         if (_photonView.IsMine) {
             TryCollision();
-            CalcCurrentSpeeds();
 
             if (!_playerInput.brakingInput && (_abilities.IsTurbo || _playerInput.horInput != 0 || _playerInput.vertInput != 0)) { //Активное движение
                 Vector3 targetDirection = new Vector3(_playerInput.horInput, 0, _playerInput.vertInput);
@@ -128,9 +128,12 @@ public class PlayerPhysics : MonoBehaviour {
         foreach (RaycastHit hit in hits) {
             if (hit.collider != null) {
                 if (hit.collider.gameObject.CompareTag("Wall")) {
+                    if (_abilities.IsShield && _rigid.velocity.magnitude > 3) _playerController.OnCollShieldWall?.Invoke(hit.point);
+                    else if(!_abilities.IsShield && _rigid.velocity.magnitude > 6) _playerController.OnCollBallWall?.Invoke(hit.point);
                     if (_playerController.TryBreakWall(hit.collider)) continue;
                     if (_abilities.IsTurbo) _rigid.velocity = Vector3.Reflect(_rigid.velocity, hit.normal);
                 }
+                else _playerController.TryKillPlayer(hit.collider);
             }
         }
     }

@@ -7,6 +7,8 @@ public class PlayerInput : MonoBehaviour {
     public float vertInput { get; private set; }
     public bool turboInput { get; private set; }
     public bool brakingInput { get; set; }
+    public bool brakingDown { get; private set; }
+    public bool brakingUp { get; private set; }
     public bool attackInput { get; private set; }
     public bool shieldInput { get; private set; }
     public bool tabInput { get; private set; }
@@ -19,7 +21,19 @@ public class PlayerInput : MonoBehaviour {
         turboInput = Input.GetButtonDown("Turbo");
         attackInput = Input.GetButtonDown("Attack");
         shieldInput = Input.GetKeyDown("e");
-        if (brakingInput != Input.GetKey("q")) Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, Input.GetKey("q"));
+        if (brakingInput != Input.GetKey("q")) {
+            Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, Input.GetKey("q"));
+            brakingDown = Input.GetKey("q");
+            if (Input.GetKey("q")) {
+                brakingDown = true;
+            }
+            else {
+                brakingUp = true;
+            }
+        } else {
+            brakingDown = false;
+            brakingUp = false;
+        }
         brakingInput = Input.GetKey("q");
         if (tabInput != Input.GetKey(KeyCode.Tab)) Messenger<bool>.Broadcast(GameEvent.ONLINE_LIST_VISIBLE, Input.GetKey(KeyCode.Tab));
         tabInput = Input.GetKey(KeyCode.Tab);

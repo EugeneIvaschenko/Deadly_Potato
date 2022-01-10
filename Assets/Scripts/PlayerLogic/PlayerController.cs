@@ -1,6 +1,7 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -10,14 +11,16 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(PlayerPhysics))]
 [RequireComponent(typeof(PlayerNetworkSync))]
+[RequireComponent(typeof(EffectsHandler))]
 public class PlayerController : MonoBehaviour {
     [SerializeField] public BladeAnimation blade = null;
     [SerializeField] public Shield shield = null;
     [SerializeField] private GameObject arrowTracker = null;
-    [SerializeField] private SkinListSO skins;
+    [SerializeField] private SkinsSO skins;
+    [SerializeField] private int delayBetweenEffectStartAndSpawn = 50;
 
-    private Rigidbody _rigid;
     private PlayerNetworkSync _playerSync;
+    public Rigidbody _rigid { get; private set; }
     public PlayerAbilities _abilities { get; private set; }
     public PlayerInput _playerInput { get; private set; }
     public PlayerPhysics _physics { get; private set; }
@@ -26,6 +29,22 @@ public class PlayerController : MonoBehaviour {
 
     public bool IsDead { get; private set; } = false;
     public string _skinID { get; private set;}
+
+    public Action<Vector3> OnShieldBlocked;
+    public Action OnDeath;
+    public Action OnRebirth;
+    public Action<Vector3> OnCollShieldShield;
+    public Action<Vector3> OnCollBladeWall;
+    public Action<Vector3> OnCollBallWall;
+    public Action<Vector3> OnCollShieldWall;
+    public Action<bool> OnBreak;
+    public Action<bool> OnTurbo;
+    public Action<bool> OnChargeTurbo;
+    public Action<bool> OnHigSpeed;
+    public Action<Vector3> OnParry;
+
+    public Action OnShieldActivation;
+    public Action<Vector3> OnCollBallBall;
 
     private void Awake() {
         _rigid = GetComponent<Rigidbody>();
@@ -86,6 +105,7 @@ public class PlayerController : MonoBehaviour {
 
     public void Kill() {
         if (IsDead) return;
+        OnDeath?.Invoke();
         _abilities.DisableTurbo();
         _abilities.DisablaShield();
         _abilities.StopAttack();
@@ -102,7 +122,12 @@ public class PlayerController : MonoBehaviour {
         if (!IsDead) return;
         IsDead = false;
         gameObject.SetActive(true);
+    }
+
+    public void PrepareRebirth() {
+        if (!IsDead) return;
         transform.position = SpawnZones.GetRandomSpawnPoint();
+        OnRebirth?.Invoke();
     }
 
     public void NetworkKill(int ownerActorNr) {
@@ -118,6 +143,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     public bool TryBreakWall(Collider other) {
+        if (_abilities.IsAttack && other.CompareTag("Wall")) {
+            Vector3 pos = Vector3.MoveTowards(transform.position, other.transform.position, blade.transform.lossyScale.x);
+            OnCollBladeWall?.Invoke(pos);
+        }
         Breakable wall = other.gameObject.GetComponent<Breakable>();
         if (wall != null) {
             bool wallDestroyed = wall.TryBreak(_rigid.velocity.magnitude, _abilities.IsAttack);
@@ -129,19 +158,36 @@ public class PlayerController : MonoBehaviour {
     public bool TryKillPlayer(Collider other) {
         PlayerController player = other.gameObject.GetComponent<PlayerController>();
         if (player == null) return false;
-        if (player.PhotonView.IsMine) return false;
         if (player.Equals(this)) return false;
+        if (player._abilities.IsShield && _abilities.IsAttack) {
+            Vector3 pos = Vector3.MoveTowards(player.transform.position, transform.position, player.transform.lossyScale.x);
+            player.OnShieldBlocked?.Invoke(pos);
+            return false;
+        }
+        if(player._abilities.IsShield && _abilities.IsShield) {
+            Vector3 pos = Vector3.Lerp(player.transform.position, transform.position, 0.5f);
+            OnCollShieldShield?.Invoke(pos);
+            return false;
+        }
+        if (_abilities.IsAttack && player._abilities.IsAttack) {
+            OnParry?.Invoke(Vector3.Lerp(transform.position, player.transform.position, 0.5f));
+            Vector3 normal = player.transform.position - Vector3.Lerp(transform.position, player.transform.position, 0.5f);
+            _rigid.velocity = Vector3.Reflect(_rigid.velocity, normal);
+            return false;
+        }
         if (_abilities.IsAttack && !player._abilities.IsShield && !player.IsDead) {
             player.Kill();
             NetworkKill(player.PhotonView.OwnerActorNr);
             return true;
         }
+        OnCollBallBall?.Invoke(Vector3.Lerp(transform.position, player.transform.position, 0.5f));
         return false;
     }
 
     private async void DelayedRespawn() {
-        //yield return new WaitForSeconds(RebirthDelay);
         await Task.Delay(RebirthDelay * 1000);
+        PrepareRebirth();
+        if (delayBetweenEffectStartAndSpawn > 0) await Task.Delay(delayBetweenEffectStartAndSpawn);
         Rebirth();
         NetworkRebirth(PhotonView.OwnerActorNr);
         Debug.Log("DelayedRespawn() - " + PhotonView.OwnerActorNr);

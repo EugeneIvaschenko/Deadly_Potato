@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Skins : MonoBehaviour {
-    [SerializeField] private SkinListSO skins;
+    [SerializeField] private SkinsSO skins;
     [SerializeField] private GameObject SkinCheckUIPrefab;
     [SerializeField] private Transform SkinListObject;
 

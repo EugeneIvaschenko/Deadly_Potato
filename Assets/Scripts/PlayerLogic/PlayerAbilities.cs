@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class PlayerAbilities : MonoBehaviour
     private PlayerController _playerController;
     private Rigidbody _rigid;
     private PlayerInput _playerInput;
+
+    private bool isTurboPreparing = false;
 
     public float attackDelay = 1.0f;
     public float turboDuration = 3.0f;
@@ -17,9 +20,18 @@ public class PlayerAbilities : MonoBehaviour
     public bool CanAttack { get; set; } = true;
     public bool CanTurbo { get; set; } = true;
     public bool IsTurbo { get; set; } = false;
-    public bool IsTurboPreparing { get; set; } = false;
+    public bool IsTurboPreparing {
+        get {
+            return isTurboPreparing;
+        }
+        set {
+            if (isTurboPreparing != value) _playerController.OnChargeTurbo?.Invoke(value);
+            isTurboPreparing = value;
+        }
+    }
     public bool CanShield { get; set; } = true;
     public bool IsShield { get; set; } = false;
+    public bool IsHighSpeed { get; private set; } = false;
 
     private void Awake() {
         _rigid = GetComponent<Rigidbody>();
@@ -28,9 +40,7 @@ public class PlayerAbilities : MonoBehaviour
     }
 
     public void Skills() {
-        if (_playerInput.attackInput && CanAttack && !IsShield) {
-            Attack();
-        }
+        if (_playerInput.attackInput && CanAttack && !IsShield) Attack();
         if (_playerInput.turboInput && CanTurbo && !IsShield) {
             if (_rigid.velocity.magnitude < 1 && !_playerInput.isAxisInput) {
                 IsTurboPreparing = true;
@@ -40,18 +50,27 @@ public class PlayerAbilities : MonoBehaviour
                 EnableTurbo();
             }
         }
-        if (IsTurboPreparing && _rigid.velocity.magnitude >= 0.3) {
-            EnableTurbo();
-        }
+        if (IsTurboPreparing && _rigid.velocity.magnitude >= 0.3) EnableTurbo();
         if (_playerInput.brakingInput && IsTurboPreparing) {
             IsTurboPreparing = false;
             StartCoroutine(TurboRefresh());
         }
-        if (_playerInput.brakingInput && IsTurbo) {
-            DisableTurbo();
+        if (_playerInput.brakingInput && IsTurbo) DisableTurbo();
+        if (_playerInput.shieldInput && CanShield) EnableShield();
+        if (_playerInput.brakingDown) _playerController.OnBreak?.Invoke(true);
+        if (_playerInput.brakingUp) _playerController.OnBreak?.Invoke(false);
+        if (_playerInput.brakingInput && _rigid.velocity.magnitude < 0.1f) _playerController.OnBreak?.Invoke(false);
+        if (_rigid.velocity.magnitude > 13f) {
+            if (!IsHighSpeed) {
+                IsHighSpeed = true;
+                _playerController.OnHigSpeed?.Invoke(true);
+            }
         }
-        if (_playerInput.shieldInput && CanShield) {
-            EnableShield();
+        else {
+            if (IsHighSpeed) {
+                IsHighSpeed = false;
+                _playerController.OnHigSpeed?.Invoke(false);
+            }
         }
     }
 
@@ -84,6 +103,7 @@ public class PlayerAbilities : MonoBehaviour
         _playerController.shield.Activate();
         IsShield = true;
         if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.SHIELD_SWITCHED, IsShield);
+        _playerController.OnShieldActivation?.Invoke();
         CanShield = false;
         DisableTurbo();
         if (IsTurboPreparing) {
@@ -118,11 +138,13 @@ public class PlayerAbilities : MonoBehaviour
         IsTurboPreparing = false;
         StartCoroutine(TurboRefresh());
         StartCoroutine(TurboDelayDeactivating());
+        _playerController.OnTurbo?.Invoke(true);
     }
 
     public void DisableTurbo() {
         IsTurbo = false;
         if (_playerController.PhotonView.IsMine) Messenger<bool>.Broadcast(GameEvent.TURBO_SWITCHED, IsTurbo);
+        _playerController.OnTurbo?.Invoke(false);
     }
 
     private IEnumerator TurboRefresh() {

@@ -69,6 +69,7 @@ GameObject:
   - component: {fileID: 3295035323431032162}
   - component: {fileID: 8753976274546687308}
   - component: {fileID: 1613007646034015304}
+  - component: {fileID: 352045547106061474}
   m_Layer: 0
   m_Name: Player ball
   m_TagString: Untagged
@@ -187,6 +188,7 @@ MonoBehaviour:
   arrowTracker: {fileID: 1180247670787160475, guid: dd71b18e89b6de945b90fdc0e097ae78,
     type: 3}
   skins: {fileID: 11400000, guid: c187ef96b9f78b24abff3bde632c5f6b, type: 2}
+  delayBetweenEffectStartAndSpawn: 500
 --- !u!114 &6159437840048957742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,6 +279,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1142ed0969a39d0499b5ccb5752863f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &352045547106061474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4864581559567211141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26ab7d59633f81e4589c949e18dd8770, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effects: {fileID: 11400000, guid: bcdacb6eb286844489b6558d9a658e2d, type: 2}
 --- !u!1 &4864581560133306581
 GameObject:
   m_ObjectHideFlags: 0
