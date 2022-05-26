@@ -2,21 +2,15 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Skins : MonoBehaviour {
+public class Skins : ISubMenuFiller {
     [SerializeField] private SkinsSO skins;
-    [SerializeField] private GameObject SkinCheckUIPrefab;
-    [SerializeField] private Transform SkinListObject;
+    [SerializeField] private GameObject SkinSelectUIPrefab;
 
-    void OnEnable()
-    {
-        UpdateList();
-    }
-
-    public void UpdateList() {
-        foreach(SkinSO skin in skins.skinList) {
-            GameObject LevelCheckUI = Instantiate(SkinCheckUIPrefab, SkinListObject);
-            LevelCheckUI.GetComponentInChildren<TMP_Text>().text = skin.displayName;
-            Button button = LevelCheckUI.GetComponentInChildren<Button>();
+    public override void UpdateSubMenuList(Transform UIListForm) {
+        foreach (SkinSO skin in skins.skinList) {
+            GameObject SkinSelectUI = Instantiate(SkinSelectUIPrefab, UIListForm);
+            SkinSelectUI.GetComponentInChildren<TMP_Text>().text = skin.displayName;
+            Button button = SkinSelectUI.GetComponentInChildren<Button>();
             button.onClick.AddListener(() => PlayerSettings.selectedSkinID = skin.uniqID);
         }
     }

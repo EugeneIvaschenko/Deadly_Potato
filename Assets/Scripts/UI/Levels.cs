@@ -1,13 +1,13 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Levels : MonoBehaviour {
+public class Levels : ISubMenuFiller {
     [SerializeField] private List<string> levelsList;
-    [SerializeField] private GameObject LevelCheckUIPrefab;
-    [SerializeField] private Transform LevelsListObject;
+    [SerializeField] private GameObject LevelSelectUIPrefab;
 
     private LobbyManager lobby;
     private List<Button> buttons;
@@ -26,28 +26,24 @@ public class Levels : MonoBehaviour {
         }
     }
 
-    private void UpdateLevelList() {
+    public override void UpdateSubMenuList(Transform UIListForm) {
+        Debug.Log("UpdateSubMenuList in Levels");
         buttons = new List<Button>();
-        LevelsListObject.DetachChildren();
         foreach (string levelName in levelsList) {
-            AddLevelCheck(levelName);
+            AddLevelCheck(levelName, UIListForm);
         }
     }
 
-    private void AddLevelCheck(string levelName) {
-        GameObject LevelCheckUI = Instantiate(LevelCheckUIPrefab, LevelsListObject);
+    private void AddLevelCheck(string levelName, Transform UIListForm) {
+        GameObject LevelCheckUI = Instantiate(LevelSelectUIPrefab, UIListForm);
         LevelCheckUI.GetComponentInChildren<TMP_Text>().text = levelName;
         Button button = LevelCheckUI.GetComponentInChildren<Button>();
         button.onClick.AddListener(() => lobby.JoinRoom(levelName));
         buttons.Add(button);
-        button.interactable = false;
+        button.interactable = PhotonNetwork.IsConnected;
     }
 
     private void OnEnable() {
         lobby = GetComponent<LobbyManager>();
-    }
-
-    private void Start() {
-        UpdateLevelList();
     }
 }
