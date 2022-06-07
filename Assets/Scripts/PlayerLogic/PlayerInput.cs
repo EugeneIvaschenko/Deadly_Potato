@@ -16,6 +16,18 @@ public class PlayerInput : MonoBehaviour {
 
     public void InputRead() {
 #if UNITY_STANDALONE
+        PCInputRead();
+#elif UNITY_ANDROID || UNITY_IOS
+        MobileInputRead();
+#elif UNITY_WEBGL
+        if (PluginsUtility.IsMobileWebGL())
+            MobileInputRead();
+        else
+            PCInputRead();
+#endif
+    }
+
+    private void PCInputRead() {
         horInput = Input.GetAxis("Horizontal");
         vertInput = Input.GetAxis("Vertical");
         turboInput = Input.GetButtonDown("Turbo");
@@ -26,8 +38,7 @@ public class PlayerInput : MonoBehaviour {
             brakingDown = Input.GetKey("q");
             if (Input.GetKey("q")) {
                 brakingDown = true;
-            }
-            else {
+            } else {
                 brakingUp = true;
             }
         } else {
@@ -35,22 +46,23 @@ public class PlayerInput : MonoBehaviour {
             brakingUp = false;
         }
         brakingInput = Input.GetKey("q");
-        if (tabInput != Input.GetKey(KeyCode.Tab)) Messenger<bool>.Broadcast(GameEvent.ONLINE_LIST_VISIBLE, Input.GetKey(KeyCode.Tab));
+        if (tabInput != Input.GetKey(KeyCode.Tab))
+            Messenger<bool>.Broadcast(GameEvent.ONLINE_LIST_VISIBLE, Input.GetKey(KeyCode.Tab));
         tabInput = Input.GetKey(KeyCode.Tab);
         isAxisInput = (vertInput != 0 || horInput != 0);
+    }
 
-#elif UNITY_ANDROID || UNITY_IOS
+    private void MobileInputRead() {
         if (moveStick == null) {
             Messenger<PlayerInput>.Broadcast(GameEvent.GET_MOVESTICK, this);
-        }
-        else {
+        } else {
             horInput = moveStick.Horizontal;
             vertInput = moveStick.Vertical;
-            if (tabInput != Input.GetKey(KeyCode.Tab)) Messenger<bool>.Broadcast(GameEvent.ONLINE_LIST_VISIBLE, Input.GetKey(KeyCode.Tab));
+            if (tabInput != Input.GetKey(KeyCode.Tab))
+                Messenger<bool>.Broadcast(GameEvent.ONLINE_LIST_VISIBLE, Input.GetKey(KeyCode.Tab));
             tabInput = Input.GetKey(KeyCode.Tab);
             isAxisInput = (vertInput != 0 || horInput != 0);
         }
-#endif
     }
 
     public void SetMoveStick(Joystick joystick) {
@@ -70,12 +82,14 @@ public class PlayerInput : MonoBehaviour {
     public void ShieldOnUp() { shieldInput = false; }
 
     public void BrakeOnDown() {
-        if (!brakingInput) Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, true);
+        if (!brakingInput)
+            Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, true);
         brakingInput = true;
     }
 
     public void BrakeOnUp() {
-        if (brakingInput) Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, false);
+        if (brakingInput)
+            Messenger<bool>.Broadcast(GameEvent.BRAKING_SWITCHED, false);
         brakingInput = false;
     }
 }

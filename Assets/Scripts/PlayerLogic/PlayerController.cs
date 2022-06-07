@@ -69,6 +69,7 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetKeyDown("escape")) Application.Quit();
 
         if (!IsDead && transform.position.y < -5) {
+            Debug.Log("MustDie");
             if (!PhotonView.IsMine) {
                 _playerSync.isNeedAbsoluteSerialize = true;
                 return;
@@ -105,6 +106,7 @@ public class PlayerController : MonoBehaviour {
 
     public void Kill() {
         if (IsDead) return;
+        Debug.Log("Died");
         OnDeath?.Invoke();
         _abilities.DisableTurbo();
         _abilities.DisablaShield();

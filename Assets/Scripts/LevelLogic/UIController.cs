@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 public class UIController : MonoBehaviourPunCallbacks {
     [SerializeField] private Image speedIndicator;
@@ -60,6 +61,11 @@ public class UIController : MonoBehaviourPunCallbacks {
 #if UNITY_STANDALONE
         moveStick.gameObject.SetActive(false);
         mobileButtons.SetActive(false);
+#elif UNITY_WEBGL
+        if (!PluginsUtility.IsMobileWebGL()) {
+            moveStick.gameObject.SetActive(false);
+            mobileButtons.SetActive(false);
+        }
 #endif
     }
 
