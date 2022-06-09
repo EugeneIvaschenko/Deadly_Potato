@@ -58,14 +58,9 @@ public class UIController : MonoBehaviourPunCallbacks {
 
         onlinePanel.gameObject.SetActive(false);
 
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_WEBGL
         moveStick.gameObject.SetActive(false);
         mobileButtons.SetActive(false);
-#elif UNITY_WEBGL
-        if (!PluginsUtility.IsMobileWebGL()) {
-            moveStick.gameObject.SetActive(false);
-            mobileButtons.SetActive(false);
-        }
 #endif
     }
 

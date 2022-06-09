@@ -15,15 +15,10 @@ public class PlayerInput : MonoBehaviour {
     public bool isAxisInput { get; private set; } = false;
 
     public void InputRead() {
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_WEBGL
         PCInputRead();
 #elif UNITY_ANDROID || UNITY_IOS
         MobileInputRead();
-#elif UNITY_WEBGL
-        if (PluginsUtility.IsMobileWebGL())
-            MobileInputRead();
-        else
-            PCInputRead();
 #endif
     }
 
