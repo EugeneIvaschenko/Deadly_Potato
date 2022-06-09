@@ -1,35 +1,32 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MainMenuUI : MonoBehaviour {
-    [SerializeField] private Transform subMenuForm;
+    [SerializeField] private Transform levelsSubMenu;
+    [SerializeField] private Button levelsButton;
     [Space]
-    [SerializeField] private List<SubMenuButtonPair> subMenuButtonPairs;
-    
+    [SerializeField] private Transform skinsSubMenu;
+    [SerializeField] private Button skinsButton;
 
+    private Transform currentSubMenu;
     private Button currentButton;
 
     private void Start() {
-        bool isFirst = true;
-        foreach (SubMenuButtonPair pair in subMenuButtonPairs) {
-            pair.button.onClick.AddListener(() => {
-                foreach (Transform child in subMenuForm.transform) {
-                    Destroy(child.gameObject);
-                }
-                OpenSubMenu(pair.button);
-                pair.subMenuFiller.UpdateSubMenuList(subMenuForm);
-            });
-            if (isFirst) {
-                isFirst = false;
-                OpenSubMenu(pair.button);
-                pair.subMenuFiller.UpdateSubMenuList(subMenuForm);
-            }
-        }
+        currentSubMenu = levelsSubMenu;
+        currentSubMenu.gameObject.SetActive(true);
+        currentButton = levelsButton;
+        currentButton.interactable = false;
+
+        levelsButton.onClick.AddListener(() => OpenSubMenu(levelsSubMenu, levelsButton));
+        skinsButton.onClick.AddListener(() => OpenSubMenu(skinsSubMenu, skinsButton));
     }
 
-    private void OpenSubMenu(Button button) {
-        if(currentButton != null) currentButton.interactable = true;
+    private void OpenSubMenu(Transform menu, Button button) {
+        currentSubMenu.gameObject.SetActive(false);
+        currentButton.interactable = true;
+
+        currentSubMenu = menu;
+        currentSubMenu.gameObject.SetActive(true);
         currentButton = button;
         currentButton.interactable = false;
     }
